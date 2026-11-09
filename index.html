@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f2ee">
+  <title>Anime Picks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+  <style>
+    :root {
+      --paper: #f4f2ee;
+      --surface: #fbfaf7;
+      --surface-muted: #ece9e3;
+      --ink: #292a28;
+      --muted: #85837e;
+      --line: #dfdcd5;
+      --accent: #ad746a;
+      --mono: "DM Mono", ui-monospace, monospace;
+      --sans: "Noto Sans KR", "Pretendard", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+
+    .collection {
+      width: min(1320px, calc(100% - 104px));
+      margin: 0 auto;
+      padding: 48px 0 112px;
+    }
+
+    .category {
+      display: grid;
+      grid-template-columns: 214px minmax(0, 1fr);
+      column-gap: clamp(34px, 5.8vw, 82px);
+      padding: 54px 0 62px;
+      border-top: 1px solid var(--line);
+    }
+    .category:first-child { border-top: 0; padding-top: 24px; }
+
+    .category-aside {
+      align-self: start;
+      padding-top: 3px;
+    }
+    .category-index {
+      display: block;
+      margin-bottom: 17px;
+      color: var(--accent);
+      font: 500 11px/1 var(--mono);
+      letter-spacing: .13em;
+    }
+    .category-name {
+      max-width: 210px;
+      margin: 0;
+      font-size: clamp(22px, 2.05vw, 28px);
+      font-weight: 700;
+      letter-spacing: -.065em;
+      line-height: 1.34;
+      word-break: keep-all;
+    }
+    .category-count {
+      display: block;
+      margin-top: 13px;
+      color: var(--muted);
+      font: 11px/1.4 var(--mono);
+      letter-spacing: .04em;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(250px, .92fr);
+      align-items: stretch;
+      gap: 16px 20px;
+      min-width: 0;
+    }
+    .cards[data-count="2"] {
+      grid-template-columns: minmax(0, 1.12fr) minmax(230px, .88fr);
+    }
+
+    .card {
+      display: flex;
+      min-width: 0;
+      min-height: 166px;
+      gap: 17px;
+      padding: 12px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      box-shadow: 0 1px 2px rgba(37, 34, 29, .025);
+      transition: transform 300ms ease-out, border-color 300ms ease-out, box-shadow 300ms ease-out;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: #c9b7b0;
+      box-shadow: 0 5px 14px rgba(37, 34, 29, .045);
+    }
+    .card:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+    .card.feature {
+      grid-column: 1 / -1;
+      min-height: 204px;
+      gap: 23px;
+      padding: 14px;
+    }
+
+    .poster {
+      position: relative;
+      display: grid;
+      flex: 0 0 105px;
+      place-items: center;
+      overflow: hidden;
+      aspect-ratio: 3 / 4;
+      align-self: flex-start;
+      background: var(--surface-muted);
+      color: var(--muted);
+      border-radius: 3px;
+    }
+    .feature .poster { flex-basis: 132px; }
+    .poster::before, .poster::after {
+      position: absolute;
+      content: "";
+      width: 62%;
+      aspect-ratio: 1;
+      border: 1px solid rgba(70, 65, 57, .12);
+      border-radius: 50%;
+      transform: rotate(-22deg);
+    }
+    .poster::after {
+      width: 92%;
+      border-radius: 2px;
+      transform: rotate(28deg);
+    }
+    .poster img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .poster-placeholder {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      padding: 8px;
+      text-align: center;
+    }
+    .poster-placeholder .mark {
+      color: var(--accent);
+      font: 500 9px/1 var(--mono);
+      letter-spacing: .16em;
+    }
+    .poster-placeholder .hint {
+      color: #858078;
+      font-size: 9px;
+      letter-spacing: -.02em;
+    }
+
+    .card-content {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-width: 0;
+      padding: 5px 2px 3px 0;
+    }
+    .rating {
+      color: var(--accent);
+      font-size: 13px;
+      line-height: 1;
+      letter-spacing: 2px;
+      white-space: nowrap;
+    }
+    .work-title {
+      margin: 12px 0 0;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: -.045em;
+      line-height: 1.55;
+      word-break: keep-all;
+    }
+    .work-sub-title {
+      margin: 12px 0 0;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: -.045em;
+      line-height: 1.25;
+      opacity: 0.5;
+ white-space: pre-line;
+      display: -webkit-box;
+      -webkit-line-clamp: 4; /* 보여줄 줄 수 (2줄) */
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-break: break-word; /* 또는 overflow-wrap: break-word */
+    }
+    .feature .work-title {
+      max-width: 560px;
+      margin-top: 15px;
+      font-size: clamp(17px, 1.75vw, 21px);
+      line-height: 1.48;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: auto;
+      padding-top: 14px;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 3px 7px;
+      color: #696761;
+      background: #f0eee9;
+      border: 1px solid #e7e4de;
+      border-radius: 3px;
+      font-size: 10px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .card-action {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid #ebe8e2;
+      color: var(--muted);
+      font: 10px/1.3 var(--mono);
+    }
+    .card-action .open {
+      color: var(--accent);
+      transition: letter-spacing 300ms ease-out;
+    }
+    .card:hover .card-action .open { letter-spacing: .04em; }
+    .card-action .unavailable { color: #aaa69e; }
+
+    .skeleton {
+      pointer-events: none;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+    }
+    .skeleton-card {
+      display: flex;
+      gap: 17px;
+      min-height: 166px;
+      padding: 12px;
+    }
+    .skeleton-poster, .skeleton-line {
+      background: #e9e6df;
+      animation: pulse 1.5s ease-in-out infinite;
+      border-radius: 3px;
+    }
+    .skeleton-poster { width: 105px; flex: 0 0 105px; aspect-ratio: 3 / 4; }
+    .skeleton-lines { flex: 1; padding-top: 12px; }
+    .skeleton-line { height: 9px; margin-bottom: 13px; }
+    .skeleton-line.short { width: 34%; }
+    .skeleton-line.medium { width: 72%; }
+    .skeleton-line.long { width: 90%; }
+    @keyframes pulse { 0%,100% { opacity: .52; } 50% { opacity: 1; } }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: opacity 650ms ease-out, transform 650ms ease-out;
+    }
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .failed {
+      padding: 20px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 980px) {
+      .collection { width: min(100% - 64px, 820px); padding-top: 36px; }
+      .category { grid-template-columns: 162px minmax(0, 1fr); column-gap: 28px; }
+      .cards, .cards[data-count="2"] { grid-template-columns: minmax(0, 1fr); }
+      .card.feature { grid-column: auto; }
+      .feature .poster { flex-basis: 105px; }
+      .feature .work-title { font-size: 15px; }
+    }
+
+    @media (max-width: 620px) {
+      .collection { width: calc(100% - 36px); padding: 18px 0 64px; }
+      .category, .category:first-child {
+        display: block;
+        padding: 34px 0 38px;
+      }
+      .category-aside {
+        display: flex;
+        align-items: baseline;
+        gap: 11px;
+        margin-bottom: 17px;
+      }
+      .category-index { margin: 0; flex: 0 0 auto; font-size: 10px; }
+      .category-name { max-width: none; font-size: 21px; }
+      .category-count { margin: 0 0 0 auto; white-space: nowrap; font-size: 10px; }
+      .cards, .cards[data-count="2"] { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+      .card, .card.feature { min-height: 142px; gap: 13px; padding: 10px; }
+      .poster, .feature .poster { flex-basis: 91px; }
+      .card-content { padding-top: 4px; }
+      .work-title, .feature .work-title { margin-top: 9px; font-size: 13px; line-height: 1.48; }
+      .rating { font-size: 12px; }
+      .tags { gap: 4px; padding-top: 10px; }
+      .tag { min-height: 20px; padding: 2px 6px; font-size: 9px; }
+      .card-action { margin-top: 10px; padding-top: 8px; font-size: 9px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="collection" id="collection" aria-label="애니메이션 추천 목록">
+    <div id="catalog">
+      <section class="category">
+        <aside class="category-aside">
+          <span class="category-index">01 / PICKS</span>
+          <h2 class="category-name"> </h2>
+        </aside>
+        <div class="cards">
+          <div class="skeleton skeleton-card"><div class="skeleton-poster"></div><div class="skeleton-lines"><div class="skeleton-line short"></div><div class="skeleton-line long"></div><div class="skeleton-line medium"></div></div></div>
+          <div class="skeleton skeleton-card"><div class="skeleton-poster"></div><div class="skeleton-lines"><div class="skeleton-line short"></div><div class="skeleton-line medium"></div><div class="skeleton-line long"></div></div></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script>
+    const catalog = document.querySelector("#catalog");
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[char]);
+    }
+
+    function imagePath(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return "";
+      try {
+        const parsed = new URL(raw, window.location.href);
+        if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+          return parsed.href;
+        }
+      } catch (_) {}
+      return "";
+    }
+
+    function linkUrl(value) {
+      const raw = String(value ?? "").trim();
+      if (!raw) return "";
+      try {
+        const parsed = new URL(raw, window.location.href);
+        return ["http:", "https:"].includes(parsed.protocol) ? parsed.href : "";
+      } catch (_) {
+        return "";
+      }
+    }
+
+    function renderPoster(item) {
+      const src = imagePath(item.img);
+      if (src) {
+        return `<div class="poster"><img src="${escapeHTML(src)}" alt="${escapeHTML(item.title)} 포스터" loading="lazy" onerror="this.remove()"></div>`;
+      }
+      return `<div class="poster"><div class="poster-placeholder"><span class="mark">POSTER</span><span class="hint">이미지 미등록</span></div></div>`;
+    }
+
+    function renderCard(item, index, sectionSize) {
+      const rating = Math.max(0, Math.min(5, Number(item.rating) || 0));
+      const url = linkUrl(item.url);
+      const tags = (Array.isArray(item.tags) ? item.tags : [])
+        .map(tag => `<span class="tag">${escapeHTML(tag)}</span>`).join("");
+      const content = `
+        ${renderPoster(item)}
+        <div class="card-content">
+          <div class="rating" aria-label="별점 ${rating}점">${"★".repeat(rating)}${"☆".repeat(5 - rating)}</div>
+          <h3 class="work-title">${escapeHTML(item.title)}</h3>
+          <h3 class="work-sub-title">${escapeHTML(item.desc)}</h3>
+          <div class="card-action">
+            <div class="tags">${tags}</div>
+          </div>
+        </div>`;
+      const feature = sectionSize > 2 && index === 0 ? " feature" : "";
+      if (url) {
+        return `<a class="card${feature}" href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer" data-aos="fade-up">${content}</a>`;
+      }
+      return `<article class="card${feature}" data-aos="fade-up">${content}</article>`;
+    }
+
+    function render(data) {
+      if (!Array.isArray(data)) throw new Error("추천 목록 JSON 형식이 올바르지 않습니다.");
+      catalog.innerHTML = data.map((section, index) => {
+        const items = Array.isArray(section.items) ? section.items : [];
+        return `
+          <section class="category" data-aos="fade-up">
+            <aside class="category-aside">
+              <span class="category-index">${String(index + 1).padStart(2, "0")} / PICKS</span>
+              <h2 class="category-name">${escapeHTML(section.category)}</h2>
+              <span class="category-count">${String(items.length).padStart(2, "0")} WORKS</span>
+            </aside>
+            <div class="cards" data-count="${items.length}">
+              ${items.map((item, itemIndex) => renderCard(item, itemIndex, items.length)).join("")}
+            </div>
+          </section>`;
+      }).join("");
+
+      if (window.AOS) {
+        AOS.init({ duration: 650, easing: "ease-out-cubic", once: true, offset: 48 });
+        AOS.refreshHard();
+      } else if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver(entries => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.08 });
+        document.querySelectorAll(".category, .card").forEach(el => {
+          el.classList.add("reveal");
+          observer.observe(el);
+        });
+      }
+    }
+
+    fetch("./recommendations.json")
+      .then(response => {
+        if (!response.ok) throw new Error("recommendations.json 파일을 불러오지 못했습니다.");
+        return response.json();
+      })
+      .then(render)
+      .catch(error => {
+        catalog.innerHTML = `<p class="failed">${escapeHTML(error.message)}<br>index.html과 recommendations.json을 같은 폴더에 두고 로컬 서버로 실행해 주세요.</p>`;
+      });
+  </script>
+</body>
+</html>
